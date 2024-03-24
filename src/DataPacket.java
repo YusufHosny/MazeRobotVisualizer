@@ -6,6 +6,17 @@ public class DataPacket {
     private String map;
 
     public DataPacket(String[] params) {
+
+        for(int i = 0; i < 4; i++) {
+            if(params[i] == null) {
+                x = 0;
+                y = 0;
+                map = null;
+                completionStatus = false;
+                return;
+            }
+        }
+
         x = Integer.parseInt(params[0]);
         y = Integer.parseInt(params[1]);
         map = params[2];

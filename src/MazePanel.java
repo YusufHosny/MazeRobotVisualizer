@@ -17,7 +17,7 @@ public class MazePanel extends JPanel {
 
     private final ApiManager api = ApiManager.getInstance();
 
-    public MazePanel(Maze maze) {
+    public MazePanel(Maze maze, Core parent) {
         super();
 
         // get dimensions
@@ -83,7 +83,6 @@ public class MazePanel extends JPanel {
         sideBar.add(Box.createRigidArea(new Dimension(0,20)));
         sideBar.add(moveBtn);
 
-
         // movement button event listener
         moveBtn.addActionListener(e -> {
             if(currentpos[0] == endpos[0] && currentpos[1] == endpos[1]) return;
@@ -109,6 +108,23 @@ public class MazePanel extends JPanel {
 
         });
 
+
+        JButton mnlBtn = new JButton("MANUAL");
+        sideBar.add(Box.createRigidArea(new Dimension(0,20)));
+        sideBar.add(mnlBtn);
+        mnlBtn.addActionListener(e -> {
+            api.sendInstruction("MNL");
+            api.sendInstruction("RST");
+            parent.reset();
+        });
+
+        JButton rstBtn = new JButton("RESET");
+        sideBar.add(Box.createRigidArea(new Dimension(0,20)));
+        sideBar.add(rstBtn);
+        rstBtn.addActionListener(e -> {
+            api.sendInstruction("RST");
+            parent.reset();
+        });
 
         add(sideBar);
 

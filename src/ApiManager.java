@@ -59,6 +59,10 @@ public class ApiManager {
         makeGETRequest("https://studev.groept.be/api/a23ib2a03/sendInstruction/"+instr);
     }
 
+    public void resetTables() {
+        makeGETRequest("https://studev.groept.be/api/a23ib2a03/resetTables/");
+    }
+
     public DataPacket getDataPacket() {
         String[] result = new String[4];
         String response = makeGETRequest("https://studev.groept.be/api/a23ib2a03/getDataPacket");

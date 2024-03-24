@@ -18,9 +18,20 @@ public class Core extends JFrame {
         // initialize api manager
         api = ApiManager.getInstance();
 
+        this.reset();
+
+        this.setVisible(true);
+
+    }
+
+    public void reset() {
+
+        api.resetTables();
+
+        if(centralArea != null) centralArea.removeAll();
+
         // central area
         centralArea = new JPanel();
-
 
         JButton mapButton = new JButton("Begin Mapping");
         centralArea.add(mapButton);
@@ -35,20 +46,18 @@ public class Core extends JFrame {
                 if(api.getDataPacket().isCompletionStatus()) {
                     System.out.println("done");
                     centralArea.removeAll();
-                    centralArea.add(new MazePanel(api.getMaze()));
+                    centralArea.add(new MazePanel(api.getMaze(), this));
                     refreshContainer(this);
                     s.shutdown();
                 }
             }, 10, 750, TimeUnit.MILLISECONDS);
         });
 
-
-
         //Adding Components to the frame.
+        this.getContentPane().removeAll();
         this.getContentPane().add(BorderLayout.WEST, centralArea);
 
-        this.setVisible(true);
-
+        refreshContainer(this);
     }
 
     public void refreshContainer(Container container) {
