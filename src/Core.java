@@ -1,6 +1,6 @@
 import javax.swing.*;
-import javax.swing.border.Border;
 import java.awt.*;
+import java.util.concurrent.*;
 
 public class Core extends JFrame {
 
@@ -14,36 +14,37 @@ public class Core extends JFrame {
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setSize(850, 700);
 
-        // TODO SETTINGS IF NEEDED
-        // JMenuBar mb = new JMenuBar();
-        // JMenu settings = new JMenu("Settings");
-        // mb.add(settings);
-        // JMenuItem settingA = new JMenuItem("settingA");
-        // JMenuItem settingB = new JMenuItem("settingB");
-        // JMenuItem settingC = new JMenuItem("settingC");
-        // settings.add(settingA);
-        // settings.add(settingB);
-        // settings.add(settingC);
 
         // initialize api manager
-        api = new ApiManager();
+        api = ApiManager.getInstance();
 
         // central area
         centralArea = new JPanel();
 
 
         JButton mapButton = new JButton("Begin Mapping");
-        centralArea.add(mapButton); // TODO action listener integrated with api
+        centralArea.add(mapButton);
         mapButton.addActionListener(e -> {
-            centralArea.removeAll();
-            centralArea.add(new MazePanel(api.getMaze()));
-            refreshContainer(this);
+            api.sendInstruction("MAP");
+            mapButton.setEnabled(false);
+
+            System.out.println("mapping...");
+            ScheduledExecutorService s = Executors.newScheduledThreadPool(1);
+
+            s.scheduleWithFixedDelay(() -> {
+                if(api.getDataPacket().isCompletionStatus()) {
+                    System.out.println("done");
+                    centralArea.removeAll();
+                    centralArea.add(new MazePanel(api.getMaze()));
+                    refreshContainer(this);
+                    s.shutdown();
+                }
+            }, 10, 750, TimeUnit.MILLISECONDS);
         });
 
 
 
         //Adding Components to the frame.
-        // this.getContentPane().add(BorderLayout.NORTH, mb);
         this.getContentPane().add(BorderLayout.WEST, centralArea);
 
         this.setVisible(true);

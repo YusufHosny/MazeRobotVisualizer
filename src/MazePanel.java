@@ -1,6 +1,10 @@
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class MazePanel extends JPanel {
 
@@ -10,6 +14,9 @@ public class MazePanel extends JPanel {
     int[] dims;
     private int[] currentpos = {0, 0},  endpos = {0, 0};
     private JLabel currentEnd, currentStart;
+
+    private final ApiManager api = ApiManager.getInstance();
+
     public MazePanel(Maze maze) {
         super();
 
@@ -54,11 +61,9 @@ public class MazePanel extends JPanel {
             }
         }
 
-        // TODO ADD CORRECT ROBOT INITIAL POSITION
-        slotList.getFirst().setHasRobot(true);
-        currentpos = getPosition(slotList.getFirst());
 
-        // sidebar
+
+        // sidebar button initialization
         sideBar = Box.createVerticalBox();
         currentStart = new JLabel("Current Position:  (" + currentpos[0]+ ", " + currentpos[1] + ")");
         JButton endBtn = new JButton("Select End Position");
@@ -74,8 +79,41 @@ public class MazePanel extends JPanel {
                 mode = Mode.SELECT_END;
             }
         });
+        JButton moveBtn = new JButton("Move");
+        sideBar.add(Box.createRigidArea(new Dimension(0,20)));
+        sideBar.add(moveBtn);
+
+
+        // movement button event listener
+        moveBtn.addActionListener(e -> {
+            if(currentpos[0] == endpos[0] && currentpos[1] == endpos[1]) return;
+
+            endBtn.setEnabled(false);
+            moveBtn.setEnabled(false);
+            String inst = "MOV,";
+            inst += endpos[0] + "," + endpos[1];
+            api.sendInstruction(inst);
+
+            ScheduledExecutorService s = Executors.newScheduledThreadPool(1);
+            s.schedule(() -> {
+                while(currentpos[0] != endpos[0] || currentpos[1] != endpos[1]) {
+                    DataPacket packet = api.getDataPacket();
+                    int x = packet.getX();
+                    int y = packet.getY();
+
+                    this.setRobotAt(x, y);
+                }
+                endBtn.setEnabled(true);
+                moveBtn.setEnabled(true);
+            }, 10, TimeUnit.MILLISECONDS);
+
+        });
+
 
         add(sideBar);
+
+        DataPacket packet = api.getDataPacket();
+        this.setRobotAt(packet.getX(), packet.getY());
 
         setVisible(true);
     }
@@ -91,6 +129,13 @@ public class MazePanel extends JPanel {
         return slotList.get(y * dims[0] + x);
     }
 
+    public void setRobotAt(int x, int y) {
+        if (currentpos[0] == x && currentpos[1] == y) return;
+
+        this.getSlot(currentpos[0], currentpos[1]).setHasRobot(false);
+        this.getSlot(x, y).setHasRobot(true);
+        updateStart(x, y);
+    }
 
     // update start/end label functions
 
