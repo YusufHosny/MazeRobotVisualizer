@@ -66,14 +66,17 @@ public class ApiManager {
     public DataPacket getDataPacket() {
         String[] result = new String[4];
         String response = makeGETRequest("https://studev.groept.be/api/a23ib2a03/getDataPacket");
-        JSONArray array = new JSONArray(response);
-        for (int i = 0; i < array.length(); i++)
-        {
-            JSONObject obj = array.getJSONObject(i);
-            result[0] = String.valueOf(obj.getInt("position_x"));
-            result[1] = String.valueOf(obj.getInt("position_y"));
-            result[2] = obj.getString("mapObject");
-            result[3] = String.valueOf(obj.getInt("mapCompletionStatus"));
+        try {
+            JSONArray array = new JSONArray(response);
+            for (int i = 0; i < array.length(); i++) {
+                JSONObject obj = array.getJSONObject(i);
+                result[0] = String.valueOf(obj.getInt("position_x"));
+                result[1] = String.valueOf(obj.getInt("position_y"));
+                result[2] = obj.getString("mapObject");
+                result[3] = String.valueOf(obj.getInt("mapCompletionStatus"));
+            }
+        } catch (Exception ignored) {
+
         }
         return new DataPacket(result);
     }

@@ -26,7 +26,7 @@ public class Core extends JFrame {
 
     public void reset() {
 
-        api.resetTables();
+
 
         if(centralArea != null) centralArea.removeAll();
 
@@ -36,6 +36,7 @@ public class Core extends JFrame {
         JButton mapButton = new JButton("Begin Mapping");
         centralArea.add(mapButton);
         mapButton.addActionListener(e -> {
+            api.resetTables();
             api.sendInstruction("MAP");
             mapButton.setEnabled(false);
 
@@ -43,14 +44,20 @@ public class Core extends JFrame {
             ScheduledExecutorService s = Executors.newScheduledThreadPool(1);
 
             s.scheduleWithFixedDelay(() -> {
-                if(api.getDataPacket().isCompletionStatus()) {
-                    System.out.println("done");
-                    centralArea.removeAll();
-                    centralArea.add(new MazePanel(api.getMaze(), this));
-                    refreshContainer(this);
-                    s.shutdown();
-                }
-            }, 10, 750, TimeUnit.MILLISECONDS);
+                        try {
+                            if (api.getDataPacket().isCompletionStatus()) {
+                                System.out.println("done");
+                                centralArea.removeAll();
+                                centralArea.add(new MazePanel(api.getMaze(), this));
+                                refreshContainer(this);
+                                s.shutdown();
+                            }
+                        } catch (Exception ignored) {
+                            System.out.println("dropped packet");
+                        }
+                    }
+            , 10, 750, TimeUnit.MILLISECONDS);
+
         });
 
         //Adding Components to the frame.

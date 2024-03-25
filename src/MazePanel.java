@@ -114,7 +114,6 @@ public class MazePanel extends JPanel {
         sideBar.add(mnlBtn);
         mnlBtn.addActionListener(e -> {
             api.sendInstruction("MNL");
-            api.sendInstruction("RST");
             parent.reset();
         });
 
